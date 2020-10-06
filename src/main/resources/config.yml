@@ -1,0 +1,9 @@
+# All times are in seconds.
+# Padding is the spacing between map and surrounding void, decrease for much faster load times.
+padding: 125
+world-generation-delay: 30
+
+min-players: 2
+then-start-after-seconds: 30
+no-pvp-for: 60
+then-game-lasts: 1200

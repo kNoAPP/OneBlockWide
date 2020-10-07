@@ -24,14 +24,14 @@ enable-water: true
 # -=MAP SETTINGS=-
 # We can generate maps while the players are playing. How many maps should we pre-generate?
 # Set to 0 to never generate maps while players are playing. This means larger wait times in lobby, but better gameplay.
-maxPreGeneratedMapsPerType: 1
+max-pregenerated-chunks-per-type: 1
 # Length of small maps.
-sizeOfSmallMaps: 200
+size-of-small-maps: 200
 # Length of medium maps.
-sizeOfMediumMaps: 400
+size-of-medium-maps: 400
 # Minimum number of players needed to trigger medium maps.
-minPlayersForMedium: 40
+min-players-for-medium: 40
 # Length of large maps
-sizeOfLargeMaps: 800
+size-of-large-maps: 800
 # Minimum number of players needed to trigger large maps.
-minPlayersForLarge: 60
+min-players-for-large: 60

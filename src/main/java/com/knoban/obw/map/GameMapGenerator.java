@@ -24,14 +24,14 @@ public final class GameMapGenerator {
 
     private GameMapGenerator() {
         FileConfiguration fc = OneBlockWide.getInstance().getFileConfig().getCachedYML();
-        this.preGenCap = fc.getInt("maxPreGeneratedMapsPerType", 3);
+        this.preGenCap = fc.getInt("max-pregenerated-chunks-per-type", 3);
 
-        this.smallMapSize = fc.getInt("sizeOfSmallMaps", 200);
-        this.mediumMapSize = fc.getInt("sizeOfMediumMaps", 400);
-        this.largeMapSize = fc.getInt("sizeOfLargeMaps", 800);
+        this.smallMapSize = fc.getInt("size-of-small-maps", 200);
+        this.mediumMapSize = fc.getInt("size-of-medium-maps", 400);
+        this.largeMapSize = fc.getInt("size-of-large-maps", 800);
 
-        this.minMedium = fc.getInt("minPlayersForMedium", 40);
-        this.minLarge = fc.getInt("minPlayersForLarge", 60);
+        this.minMedium = fc.getInt("min-players-for-medium", 40);
+        this.minLarge = fc.getInt("min-players-for-large", 60);
 
         this.sleeping = false;
         generateNewMap();

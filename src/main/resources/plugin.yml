@@ -3,4 +3,3 @@ author: kNoAPP
 version: ${project.version}-${git.commit.id.abbrev}
 main: ${project.groupId}.${project.artifactId}.${project.name}
 api-version: 1.16
-depend: [Atlas]

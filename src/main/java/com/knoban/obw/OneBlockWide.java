@@ -4,8 +4,8 @@ import com.knoban.atlas.data.local.DataHandler;
 import com.knoban.atlas.world.Coordinate;
 import com.knoban.obw.commands.CommandHandler;
 import com.knoban.obw.game.Game;
-import com.knoban.obw.game.GamePhase;
 import com.knoban.obw.general.GeneralListener;
+import com.knoban.obw.map.GameMapGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,6 +36,7 @@ public class OneBlockWide extends JavaPlugin {
         new CommandHandler(this);
         getServer().getPluginManager().registerEvents(new GeneralListener(), this);
 
+        GameMapGenerator.getInstance();
         Game.getInstance(); // Rev up those fryers!
 
         long tEnd = System.currentTimeMillis();
@@ -50,7 +51,8 @@ public class OneBlockWide extends JavaPlugin {
         super.onDisable();
 
         // TODO
-        Game.getInstance().setGamePhase(GamePhase.LOBBY);
+        GameMapGenerator.getInstance().safeShutdown();
+        Game.getInstance().getGameMap().unload();
         spawn.saveJSON(new Coordinate(spawnLoc));
 
         long tEnd = System.currentTimeMillis();

@@ -1,9 +1,37 @@
 # All times are in seconds.
-# Padding is the spacing between map and surrounding void, decrease for much faster load times.
-padding: 125
-world-generation-delay: 30
 
+# -=GAME TIMES=-
+# Min players to start game.
 min-players: 2
+# When you have min players, start after this amount of time.
 then-start-after-seconds: 30
-no-pvp-for: 60
-then-game-lasts: 1200
+# No pvp for this amount of time.
+no-pvp-for: 120
+# Then the game ends after this amount of time.
+then-game-lasts: 600
+
+# -=MAP GENERATION=-
+# Padding is the spacing between map and surrounding void. Decrease = better performance, less void.
+padding: 15
+# Initial world generation. Increase if you get giant red blocks of crash debug, decrease for faster world generation.
+world-generation-delay: 40
+# Max number of millis spent on generating the maps. Should be at most 50. Decrease = better performance, slower generation.
+max-millis-per-tick-generating: 5
+# Enable water? Water can be annoying, but also can be fun for strategy.
+enable-water: true
+
+
+# -=MAP SETTINGS=-
+# We can generate maps while the players are playing. How many maps should we pre-generate?
+# Set to 0 to never generate maps while players are playing. This means larger wait times in lobby, but better gameplay.
+maxPreGeneratedMapsPerType: 1
+# Length of small maps.
+sizeOfSmallMaps: 200
+# Length of medium maps.
+sizeOfMediumMaps: 400
+# Minimum number of players needed to trigger medium maps.
+minPlayersForMedium: 40
+# Length of large maps
+sizeOfLargeMaps: 800
+# Minimum number of players needed to trigger large maps.
+minPlayersForLarge: 60

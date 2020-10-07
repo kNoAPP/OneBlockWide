@@ -27,7 +27,9 @@ public class GameMap implements Listener {
     private World world;
     private final String name;
     private final int length;
+    private final long maxMillisPerTickOnGeneration;
     private int completedGenerationStages, lowestStableXRel;
+    private final boolean water;
     private Location origin, center;
 
     private Runnable onGenerationComplete;
@@ -36,6 +38,10 @@ public class GameMap implements Listener {
         this.name = name;
         this.length = length;
         this.completedGenerationStages = 0;
+
+        FileConfiguration fc = OneBlockWide.getInstance().getFileConfig().getCachedYML();
+        this.maxMillisPerTickOnGeneration = fc.getLong("max-millis-per-tick-generating", 10);
+        this.water = fc.getBoolean("enable-water", true);
     }
 
     public void generateWorld() {
@@ -148,6 +154,9 @@ public class GameMap implements Listener {
                     incCompletion();
                     incCompletion();
                 }
+
+                // Block Replacing
+                lowTickBlockReplace(world, oX, oX+length-1, 0, world.getMaxHeight()-1, oZ, oZ, () -> incCompletion());
             }
         }.runTaskLater(OneBlockWide.getInstance(), worldGenDelay); // Give world chance to warm up. Hate how there's no call to check progress
     }
@@ -158,7 +167,7 @@ public class GameMap implements Listener {
 
     @NotNull
     public GenerationStatus getGenerationStatus() {
-        if(completedGenerationStages >= 10)
+        if(completedGenerationStages >= 11)
             return GenerationStatus.COMPLETE;
         if(completedGenerationStages > 0)
             return GenerationStatus.GENERATING;
@@ -175,15 +184,16 @@ public class GameMap implements Listener {
         return new BukkitRunnable() {
             private int x = xFrom, y = yFrom, z = zFrom;
             private int opsPerSecond = 50;
-            private long lastRun = System.currentTimeMillis() - 1L;
+            private long lastRun = 0L;
             public void run() {
                 if(getGenerationStatus() == GenerationStatus.UNLOADED) {
                     this.cancel();
                     return;
                 }
 
-                opsPerSecond = (double)(System.currentTimeMillis() - lastRun)/50.0 > 1.0 ? (int) (opsPerSecond*0.825) : opsPerSecond+300;
-                lastRun = System.currentTimeMillis();
+                long start = System.currentTimeMillis();
+
+                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.825) : opsPerSecond+300;
                 for(int i=0; i<opsPerSecond; i++) {
                     world.getBlockAt(x, y, z).setType(type);
 
@@ -205,6 +215,73 @@ public class GameMap implements Listener {
                         }
                     }
                 }
+
+                lastRun = System.currentTimeMillis() - start;
+            }
+        }.runTaskTimer(OneBlockWide.getInstance(), 0L, 1L);
+    }
+
+    private BukkitTask lowTickBlockReplace(@NotNull World world, int xFrom, int xTo, int yFrom, int yTo, int zFrom, int zTo, @Nullable Runnable callWhenFinished) {
+        if(xFrom > xTo || yFrom > yTo || zFrom > zTo)
+            throw new IndexOutOfBoundsException();
+
+        return new BukkitRunnable() {
+            private int x = xFrom, y = yFrom, z = zFrom;
+            private int opsPerSecond = 50;
+            private long lastRun = 0L;
+            public void run() {
+                if(getGenerationStatus() == GenerationStatus.UNLOADED) {
+                    this.cancel();
+                    return;
+                }
+
+                long start = System.currentTimeMillis();
+
+                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.825) : opsPerSecond+300;
+                for(int i=0; i<opsPerSecond; i++) {
+                    Block b = world.getBlockAt(x, y, z);
+
+                    switch(b.getType()) {
+                        case LAPIS_ORE:
+                            b.setType(Material.DIAMOND_ORE);
+                            break;
+                        case REDSTONE_ORE:
+                            b.setType(Material.DIAMOND_ORE);
+                            break;
+                        case EMERALD_ORE:
+                            b.setType(Material.IRON_ORE);
+                            break;
+                        case GOLD_ORE:
+                            b.setType(Material.IRON_ORE);
+                            break;
+                        case WATER:
+                            if(!water)
+                                b.setType(Material.AIR);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    x++;
+                    if(x > xTo) {
+                        x = xFrom;
+                        y++;
+
+                        if(y > yTo) {
+                            y = yFrom;
+                            z++;
+
+                            if(z > zTo) {
+                                if(callWhenFinished != null)
+                                    callWhenFinished.run();
+                                this.cancel();
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                lastRun = System.currentTimeMillis() - start;
             }
         }.runTaskTimer(OneBlockWide.getInstance(), 0L, 1L);
     }
@@ -286,7 +363,9 @@ public class GameMap implements Listener {
     }
 
     private void incCompletion() {
-        if(++completedGenerationStages == 10) {
+        ++completedGenerationStages;
+        Bukkit.getLogger().info("Map " + name + " stage: " + completedGenerationStages);
+        if(completedGenerationStages == 11) {
             Bukkit.getLogger().info("Map " + name + " is baked!");
             if(onGenerationComplete != null)
                 onGenerationComplete.run();

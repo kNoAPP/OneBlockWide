@@ -4,6 +4,7 @@ import com.knoban.atlas.utils.Tools;
 import com.knoban.obw.OneBlockWide;
 import com.knoban.obw.general.CC;
 import com.knoban.obw.map.GameMap;
+import com.knoban.obw.map.GameMapGenerator;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -21,7 +22,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,16 +51,16 @@ public final class Game implements Listener {
 
         Bukkit.getServer().getPluginManager().registerEvents(this, oneBlockWide);
 
-        this.gameMap = GameMap.generateMap(getSuggestedMapLength());
-        this.phase = GamePhase.LOBBY;
         this.lastWinner = ChatColor.RED + "No One";
-
         setGamePhase(GamePhase.LOBBY);
 
         Bukkit.getScheduler().runTaskTimer(oneBlockWide, this::run, 0L, 20L);
     }
 
     public void setGamePhase(@NotNull GamePhase phase) {
+        if(this.phase == phase)
+            return;
+
         switch(phase) {
             case LOBBY:
                 for(Player pl : Bukkit.getOnlinePlayers()) {
@@ -69,6 +69,8 @@ public final class Game implements Listener {
                     pl.playSound(pl.getLocation(), Sound.ENTITY_ENDER_EYE_DEATH, 1F, 0.2F);
                     Tools.clearFullInv(pl);
                     pl.setGameMode(GameMode.ADVENTURE);
+                    pl.setLevel(0);
+                    pl.setExp(0);
                     pl.setHealth(20);
                     pl.setFoodLevel(20);
                     pl.setInvulnerable(true);
@@ -76,10 +78,11 @@ public final class Game implements Listener {
                     pl.setCollidable(true);
                 }
 
-                if(gameMap.getGenerationStatus() != GameMap.GenerationStatus.NOT_STARTED) {
+                GameMapGenerator generator = GameMapGenerator.getInstance();
+                if(gameMap != null)
                     gameMap.unload();
-                    gameMap = GameMap.generateMap(getSuggestedMapLength());
-                }
+                gameMap = generator.pollMap();
+                generator.wake();
 
                 countdown = initialLobbyCountdown;
                 break;
@@ -94,7 +97,7 @@ public final class Game implements Listener {
                     pl.playSound(pl.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1F, 0.5F);
                     pl.playSound(pl.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1F, 0.8F);
                     Tools.clearFullInv(pl);
-                    pl.getInventory().addItem(new ItemStack(Material.OAK_LOG, 3), new ItemStack(Material.APPLE), new ItemStack(Material.SPONGE));
+                    pl.getInventory().addItem(new ItemStack(Material.OAK_LOG, 4), new ItemStack(Material.APPLE, 2), new ItemStack(Material.SPONGE));
                     pl.setGameMode(GameMode.SURVIVAL);
                     pl.removePotionEffect(PotionEffectType.SATURATION);
                     pl.setSaturation(6F);
@@ -145,9 +148,6 @@ public final class Game implements Listener {
     public void run() {
         switch(phase) {
             case LOBBY:
-                if(ticker == 5) // Let's players teleport to lobby before heavy work begins.
-                    gameMap.generateWorld();
-
                 for(Player pl : Bukkit.getOnlinePlayers()) {
                     if(gameMap.getGenerationStatus() != GameMap.GenerationStatus.COMPLETE)
                         pl.sendActionBar(getMapStatus());
@@ -226,7 +226,7 @@ public final class Game implements Listener {
         sb.append(CC.VIVID_BLUE_SKY);
         sb.append("(");
         sb.append(gameMap.getCompletedGenerationStages());
-        sb.append("/9)");
+        sb.append("/10)");
 
         return sb.toString();
     }
@@ -270,6 +270,11 @@ public final class Game implements Listener {
         return Math.min(1F, (float)ticker / (float)initialGameCountdown);
     }
 
+    @Nullable
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
@@ -289,7 +294,7 @@ public final class Game implements Listener {
                 e.getDrops().add(new ItemStack(Material.BONE, 1));
                 e.getDrops().add(new ItemStack(Material.BEEF, 3));
                 for(ItemStack is : e.getDrops())
-                    p.getWorld().dropItemNaturally(p.getLocation(), is);
+                    p.getWorld().dropItem(p.getLocation(), is);
 
                 p.setGameMode(GameMode.SPECTATOR);
                 if(p.getLocation().getY() < 0)
@@ -361,6 +366,8 @@ public final class Game implements Listener {
                 }
                 Tools.clearFullInv(p);
                 p.setGameMode(GameMode.ADVENTURE);
+                p.setLevel(0);
+                p.setExp(0);
                 p.setHealth(20);
                 p.setFoodLevel(20);
                 break;

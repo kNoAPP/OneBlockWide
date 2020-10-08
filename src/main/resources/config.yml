@@ -16,7 +16,7 @@ padding: 15
 # Initial world generation. Increase if you get giant red blocks of crash debug, decrease for faster world generation.
 world-generation-delay: 40
 # Max number of millis spent on generating the maps. Should be at most 50. Decrease = better performance, slower generation.
-max-millis-per-tick-generating: 5
+max-millis-per-tick-generating: 4
 # Enable water? Water can be annoying, but also can be fun for strategy.
 enable-water: true
 

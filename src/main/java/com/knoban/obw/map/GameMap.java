@@ -193,7 +193,7 @@ public class GameMap implements Listener {
 
                 long start = System.currentTimeMillis();
 
-                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.825) : opsPerSecond+300;
+                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.875) : opsPerSecond+10;
                 for(int i=0; i<opsPerSecond; i++) {
                     world.getBlockAt(x, y, z).setType(type);
 
@@ -237,7 +237,7 @@ public class GameMap implements Listener {
 
                 long start = System.currentTimeMillis();
 
-                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.825) : opsPerSecond+300;
+                opsPerSecond = lastRun > maxMillisPerTickOnGeneration ? (int) (opsPerSecond*0.875) : opsPerSecond+10;
                 for(int i=0; i<opsPerSecond; i++) {
                     Block b = world.getBlockAt(x, y, z);
 

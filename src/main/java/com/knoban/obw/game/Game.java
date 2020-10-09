@@ -324,15 +324,15 @@ public final class Game implements Listener {
     }
 
     @Nullable
-    private String getLastAlive(Player ignore) {
+    private String getLastAlive(@NotNull Player ignore) {
         String lastAlive = null;
         for(Player pl : Bukkit.getOnlinePlayers()) {
             if(pl.equals(ignore))
                 continue;
 
-            if(lastAlive == null && pl.getGameMode() != GameMode.SPECTATOR)
+            if(lastAlive == null && pl.getGameMode() == GameMode.SURVIVAL)
                 lastAlive = pl.getName();
-            else if(lastAlive != null && pl.getGameMode() != GameMode.SPECTATOR)
+            else if(lastAlive != null && pl.getGameMode() == GameMode.SURVIVAL)
                 return null;
         }
 

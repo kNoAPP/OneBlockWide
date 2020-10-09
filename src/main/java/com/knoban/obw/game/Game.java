@@ -226,7 +226,7 @@ public final class Game implements Listener {
         sb.append(CC.VIVID_BLUE_SKY);
         sb.append("(");
         sb.append(gameMap.getCompletedGenerationStages());
-        sb.append("/10)");
+        sb.append("/12)");
 
         return sb.toString();
     }
@@ -448,10 +448,16 @@ public final class Game implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void beforeCommand(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
-        if(!p.hasPermission("obw.admin") && disabledCommands.contains(e.getMessage().toLowerCase())) {
-            p.sendMessage(CC.NEON_BLUE + "Game> " + CC.EGGSHELL + "That command is disabled. Sorry!");
-            p.playSound(p.getLocation(), Sound.ENTITY_CHICKEN_HURT, 1F, 1F);
-            e.setCancelled(true);
+        String cmd = e.getMessage();
+        if(!p.hasPermission("obw.admin")) {
+            for(String disabled : disabledCommands) {
+                if(cmd.toLowerCase().startsWith(disabled.toLowerCase())) {
+                    p.sendMessage(CC.NEON_BLUE + "Game> " + CC.EGGSHELL + "That command is disabled. Sorry!");
+                    p.playSound(p.getLocation(), Sound.ENTITY_CHICKEN_HURT, 1F, 1F);
+                    e.setCancelled(true);
+                    return;
+                }
+            }
         }
     }
 

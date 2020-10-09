@@ -47,7 +47,7 @@ public class GameMap implements Listener {
     public void generateWorld() {
         if(completedGenerationStages > 0)
             return;
-        completedGenerationStages = 1;
+        incCompletion();
         this.world = new WorldCreator(name).environment(World.Environment.NORMAL).type(WorldType.NORMAL).generateStructures(false)
                 /*.generator(new ChunkGenerator() {
                     @Override
@@ -108,6 +108,7 @@ public class GameMap implements Listener {
         world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
         world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+        world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
 
         world.setThundering(false);
         world.setStorm(false);
@@ -123,7 +124,8 @@ public class GameMap implements Listener {
 
         FileConfiguration cached = instance.getFileConfig().getCachedYML();
         long worldGenDelay = cached.getInt("world-generation-delay", 30) * 20L;
-        int padding = cached.getInt("padding", 125) + 2;
+        int padding = Math.max(2, cached.getInt("padding", 125) + 2);
+        int maxBuild = Math.max(0, Math.min(255, cached.getInt("max-build-height", 255)));
         new BukkitRunnable() {
             public void run() {
                 Bukkit.getLogger().info("Generating map " + name + "...");
@@ -133,16 +135,17 @@ public class GameMap implements Listener {
                 }
 
                 GameMap.this.lowestStableXRel = 0;
-                GameMap.this.center = new Location(world, oX+length/2, world.getHighestBlockYAt(oX+length/2, oZ), oZ);
+                GameMap.this.center = new Location(world, oX+length/2, 80, oZ);
 
                 // Barrier
-                lowTickBlockChange(world, oX, oX+length, world.getMaxHeight()-1, world.getMaxHeight()-1, oZ, oZ, Material.BARRIER, () -> incCompletion());
+                lowTickBlockChange(world, oX, oX+length, maxBuild,  maxBuild, oZ, oZ, Material.BARRIER, () -> incCompletion());
                 lowTickBlockChange(world, oX-1, oX-1, 0, world.getMaxHeight()-1, oZ, oZ, Material.BARRIER, () -> incCompletion());
                 lowTickBlockChange(world, oX+length, oX+length, 0, world.getMaxHeight()-1, oZ, oZ, Material.BARRIER, () -> incCompletion());
                 lowTickBlockChange(world, oX-1, oX+length, 0, world.getMaxHeight()-1, oZ+1, oZ+1, Material.BARRIER, () -> incCompletion());
                 lowTickBlockChange(world, oX-1, oX+length, 0, world.getMaxHeight()-1, oZ-1, oZ-1, Material.BARRIER, () -> incCompletion());
 
                 // Air
+                lowTickBlockChange(world, oX, oX+length, maxBuild+1,  world.getMaxHeight()-1, oZ, oZ, Material.AIR, () -> incCompletion());
                 if(padding > 2) {
                     lowTickBlockChange(world, oX - padding, oX - 2, 0, world.getMaxHeight() - 1, oZ - 1, oZ + 1, Material.AIR, () -> incCompletion());
                     lowTickBlockChange(world, oX + length + 1, oX + length + padding, 0, world.getMaxHeight() - 1, oZ - 1, oZ + 1, Material.AIR, () -> incCompletion());
@@ -167,7 +170,7 @@ public class GameMap implements Listener {
 
     @NotNull
     public GenerationStatus getGenerationStatus() {
-        if(completedGenerationStages >= 11)
+        if(completedGenerationStages >= 12)
             return GenerationStatus.COMPLETE;
         if(completedGenerationStages > 0)
             return GenerationStatus.GENERATING;
@@ -177,9 +180,13 @@ public class GameMap implements Listener {
         return GenerationStatus.UNLOADED;
     }
 
+    @Nullable
     private BukkitTask lowTickBlockChange(@NotNull World world, int xFrom, int xTo, int yFrom, int yTo, int zFrom, int zTo, @NotNull Material type, @Nullable Runnable callWhenFinished) {
-        if(xFrom > xTo || yFrom > yTo || zFrom > zTo)
-            throw new IndexOutOfBoundsException();
+        if(xFrom > xTo || yFrom > yTo || zFrom > zTo) {
+            if(callWhenFinished != null)
+                callWhenFinished.run();
+            return null;
+        }
 
         return new BukkitRunnable() {
             private int x = xFrom, y = yFrom, z = zFrom;
@@ -221,9 +228,13 @@ public class GameMap implements Listener {
         }.runTaskTimer(OneBlockWide.getInstance(), 0L, 1L);
     }
 
+    @Nullable
     private BukkitTask lowTickBlockReplace(@NotNull World world, int xFrom, int xTo, int yFrom, int yTo, int zFrom, int zTo, @Nullable Runnable callWhenFinished) {
-        if(xFrom > xTo || yFrom > yTo || zFrom > zTo)
-            throw new IndexOutOfBoundsException();
+        if(xFrom > xTo || yFrom > yTo || zFrom > zTo) {
+            if(callWhenFinished != null)
+                callWhenFinished.run();
+            return null;
+        }
 
         return new BukkitRunnable() {
             private int x = xFrom, y = yFrom, z = zFrom;
@@ -243,16 +254,18 @@ public class GameMap implements Listener {
 
                     switch(b.getType()) {
                         case LAPIS_ORE:
-                            b.setType(Material.DIAMOND_ORE);
-                            break;
                         case REDSTONE_ORE:
+                        case EMERALD_ORE:
+                        case GOLD_ORE:
                             b.setType(Material.DIAMOND_ORE);
                             break;
-                        case EMERALD_ORE:
+                        case DIORITE:
+                        case COAL_ORE:
                             b.setType(Material.IRON_ORE);
                             break;
-                        case GOLD_ORE:
-                            b.setType(Material.IRON_ORE);
+                        case ANDESITE:
+                        case GRANITE:
+                            b.setType(Material.COAL_ORE);
                             break;
                         case WATER:
                             if(!water)
@@ -300,7 +313,7 @@ public class GameMap implements Listener {
         if(decayAmount > lowestStableXRel) {
             for(int i=lowestStableXRel; i<decayAmount; i++) {
                 int x = origin.getBlockX() + i;
-                for(int y=0; y<world.getMaxHeight()-2; y++) {
+                for(int y=0; y<=world.getHighestBlockYAt(x, 0); y++) {
                     Block b = world.getBlockAt(x, y, origin.getBlockZ());
                     if(y%3==0)
                         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
@@ -311,7 +324,7 @@ public class GameMap implements Listener {
 
             for(int i=lowestStableXRel; i<decayAmount; i++) {
                 int x = origin.getBlockX() + (length-1) - i;
-                for(int y=0; y<world.getMaxHeight()-2; y++) {
+                for(int y=0; y<=world.getHighestBlockYAt(x, 0); y++) {
                     Block b = world.getBlockAt(x, y, origin.getBlockZ());
                     if(y%3==0)
                         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
@@ -341,7 +354,9 @@ public class GameMap implements Listener {
 
     @Nullable
     public Location getCenter() {
-        return center;
+        Location loc = center.clone();
+        loc.setY(80);
+        return loc;
     }
 
     @Nullable
@@ -365,7 +380,7 @@ public class GameMap implements Listener {
     private void incCompletion() {
         ++completedGenerationStages;
         Bukkit.getLogger().info("Map " + name + " stage: " + completedGenerationStages);
-        if(completedGenerationStages == 11) {
+        if(completedGenerationStages == 12) {
             Bukkit.getLogger().info("Map " + name + " is baked!");
             if(onGenerationComplete != null)
                 onGenerationComplete.run();

@@ -19,6 +19,8 @@ world-generation-delay: 40
 max-millis-per-tick-generating: 4
 # Enable water? Water can be annoying, but also can be fun for strategy.
 enable-water: true
+# Max build height (no higher than: 255), cannot go above this point.
+max-build-height: 255
 
 
 # -=MAP SETTINGS=-
@@ -35,3 +37,15 @@ min-players-for-medium: 40
 size-of-large-maps: 800
 # Minimum number of players needed to trigger large maps.
 min-players-for-large: 60
+
+# -=CHEATING=-
+# Commands to disable while in game...
+disable-commands:
+  - "/whisper"
+  - "/w"
+  - "/msg"
+  - "/r"
+  - "/tell"
+  - "/message"
+  - "/reply"
+  - "/pm"

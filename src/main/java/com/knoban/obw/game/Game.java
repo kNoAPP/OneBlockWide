@@ -15,10 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -41,6 +38,8 @@ public final class Game implements Listener {
 
     private String lastWinner;
 
+    private final List<String> disabledCommands;
+
     private Game() {
         this.oneBlockWide = OneBlockWide.getInstance();
         FileConfiguration cached = oneBlockWide.getFileConfig().getCachedYML();
@@ -48,6 +47,7 @@ public final class Game implements Listener {
         this.initialLobbyCountdown = cached.getInt("then-start-after-seconds", 30);
         this.initialPvPCountdown = cached.getInt("no-pvp-for", 60);
         this.initialGameCountdown = cached.getInt("then-game-lasts", 1200);
+        this.disabledCommands = cached.getStringList("disable-commands");
 
         Bukkit.getServer().getPluginManager().registerEvents(this, oneBlockWide);
 
@@ -275,11 +275,32 @@ public final class Game implements Listener {
         return gameMap;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
-        e.setCancelled(true);
-        p.setHealth(20);
+        switch(phase) {
+            case LOBBY:
+                e.setCancelled(true);
+                p.setHealth(20);
+                break;
+            case PRECOMBAT:
+            case COMBAT:
+            case WINNER:
+                p.setGameMode(GameMode.SPECTATOR);
+                if(p.getLocation().getY() < 0)
+                    p.teleport(gameMap.getCenter());
+                break;
+        }
+        e.getDrops().add(new ItemStack(Material.BONE, 1));
+        e.getDrops().add(new ItemStack(Material.BEEF, 3));
+        for(ItemStack is : e.getDrops())
+            p.getWorld().dropItem(p.getLocation(), is);
+        e.getDrops().clear();
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent e) {
+        Player p = e.getPlayer();
 
         switch(phase) {
             case LOBBY:
@@ -288,17 +309,8 @@ public final class Game implements Listener {
             case PRECOMBAT:
             case COMBAT:
                 p.sendMessage(CC.NEON_BLUE + "Game> " + CC.EGGSHELL + "You died! But don't worry, you can still spectate.");
-                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.4F, 1F);
-                p.getWorld().playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.2F, 0.2F);
-
-                e.getDrops().add(new ItemStack(Material.BONE, 1));
-                e.getDrops().add(new ItemStack(Material.BEEF, 3));
-                for(ItemStack is : e.getDrops())
-                    p.getWorld().dropItem(p.getLocation(), is);
-
-                p.setGameMode(GameMode.SPECTATOR);
-                if(p.getLocation().getY() < 0)
-                    p.teleport(gameMap.getCenter());
+                p.getWorld().playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.4F, 5F);
+                p.getWorld().playSound(p.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.2F, 5F);
 
                 String lastAlive = getLastAlive(p);
                 if(lastAlive != null) {
@@ -307,9 +319,6 @@ public final class Game implements Listener {
                 }
                 break;
             case WINNER:
-                p.setGameMode(GameMode.SPECTATOR);
-                p.teleport(gameMap.getCenter());
-                p.setFoodLevel(20);
                 break;
         }
     }
@@ -433,6 +442,16 @@ public final class Game implements Listener {
                 break;
             case WINNER:
                 break;
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void beforeCommand(PlayerCommandPreprocessEvent e) {
+        Player p = e.getPlayer();
+        if(!p.hasPermission("obw.admin") && disabledCommands.contains(e.getMessage().toLowerCase())) {
+            p.sendMessage(CC.NEON_BLUE + "Game> " + CC.EGGSHELL + "That command is disabled. Sorry!");
+            p.playSound(p.getLocation(), Sound.ENTITY_CHICKEN_HURT, 1F, 1F);
+            e.setCancelled(true);
         }
     }
 

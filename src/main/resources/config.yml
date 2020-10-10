@@ -21,6 +21,8 @@ max-millis-per-tick-generating: 4
 enable-water: true
 # Max build height (no higher than: 255), cannot go above this point.
 max-build-height: 255
+# Should we replace andisite, diorite, granite with useful ores?
+extra-ore: true
 
 
 # -=MAP SETTINGS=-

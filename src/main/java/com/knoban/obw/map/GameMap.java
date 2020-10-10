@@ -29,7 +29,7 @@ public class GameMap implements Listener {
     private final int length;
     private final long maxMillisPerTickOnGeneration;
     private int completedGenerationStages, lowestStableXRel;
-    private final boolean water;
+    private final boolean water, ore;
     private Location origin, center;
 
     private Runnable onGenerationComplete;
@@ -42,6 +42,7 @@ public class GameMap implements Listener {
         FileConfiguration fc = OneBlockWide.getInstance().getFileConfig().getCachedYML();
         this.maxMillisPerTickOnGeneration = fc.getLong("max-millis-per-tick-generating", 10);
         this.water = fc.getBoolean("enable-water", true);
+        this.ore = fc.getBoolean("extra-ore", true);
     }
 
     public void generateWorld() {
@@ -257,15 +258,18 @@ public class GameMap implements Listener {
                         case REDSTONE_ORE:
                         case EMERALD_ORE:
                         case GOLD_ORE:
-                            b.setType(Material.DIAMOND_ORE);
+                            if(ore)
+                                b.setType(Material.DIAMOND_ORE);
                             break;
                         case DIORITE:
                         case COAL_ORE:
-                            b.setType(Material.IRON_ORE);
+                            if(ore)
+                                b.setType(Material.IRON_ORE);
                             break;
                         case ANDESITE:
                         case GRANITE:
-                            b.setType(Material.COAL_ORE);
+                            if(ore)
+                                b.setType(Material.COAL_ORE);
                             break;
                         case WATER:
                             if(!water)

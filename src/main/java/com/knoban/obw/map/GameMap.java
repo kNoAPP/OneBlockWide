@@ -317,7 +317,7 @@ public class GameMap implements Listener {
         if(decayAmount > lowestStableXRel) {
             for(int i=lowestStableXRel; i<decayAmount; i++) {
                 int x = origin.getBlockX() + i;
-                for(int y=0; y<=world.getHighestBlockYAt(x, 0); y++) {
+                for(int y=0; y<=world.getHighestBlockYAt(x, origin.getBlockZ()); y++) {
                     Block b = world.getBlockAt(x, y, origin.getBlockZ());
                     if(y%3==0)
                         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
@@ -328,7 +328,7 @@ public class GameMap implements Listener {
 
             for(int i=lowestStableXRel; i<decayAmount; i++) {
                 int x = origin.getBlockX() + (length-1) - i;
-                for(int y=0; y<=world.getHighestBlockYAt(x, 0); y++) {
+                for(int y=0; y<=world.getHighestBlockYAt(x, origin.getBlockZ()); y++) {
                     Block b = world.getBlockAt(x, y, origin.getBlockZ());
                     if(y%3==0)
                         b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());

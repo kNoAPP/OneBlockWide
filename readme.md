@@ -21,7 +21,7 @@ Follow these steps:
 
 ## Running the game
 Follow these steps:
-1. Either build the project using the above, or download a copy here: https://github.com/kNoAPP/OneBlockWide/releases/tag/deacb2f
+1. Either build the project using the above, or download a copy here: https://github.com/kNoAPP/OneBlockWide/releases/tag/7017735
 2. Drop this jar into the `./plugins` folder of your PaperSpigot 1.16.3 Server
 3. Start the server
 4. Join the server from the Minecraft 1.16.3 client

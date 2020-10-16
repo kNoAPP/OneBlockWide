@@ -8,6 +8,9 @@ import com.knoban.obw.general.GeneralListener;
 import com.knoban.obw.map.GameMapGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +23,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 
-public class OneBlockWide extends JavaPlugin {
+public class OneBlockWide extends JavaPlugin implements Listener {
 
     private static OneBlockWide instance;
 
@@ -105,6 +108,11 @@ public class OneBlockWide extends JavaPlugin {
         }
 
         getLogger().info("Successfully Disabled! (" + shutdownTime + " ms)");
+    }
+
+    @EventHandler
+    public void onWorldInit(WorldInitEvent event) {
+        event.getWorld().setKeepSpawnInMemory(false);
     }
 
     /**

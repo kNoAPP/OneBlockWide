@@ -296,10 +296,16 @@ public final class Game implements Listener {
                         player.sendMessage(e.getDeathMessage());
                     }
                 }
-                
+
+                if (p.getLocation().getY() < 20) {
+                    Bukkit.getScheduler().runTaskLater(OneBlockWide.getInstance(), () -> {
+                        Location locationClone = p.getLocation().clone();
+                        locationClone.setY(20);
+                        p.teleport(locationClone);
+                    }, 1L);
+                }
+
                 p.setGameMode(GameMode.SPECTATOR);
-                if(p.getLocation().getY() < 0)
-                    //p.teleport(gameMap.getCenter());
                 break;
         }
         e.getDrops().add(new ItemStack(Material.BONE, 1));

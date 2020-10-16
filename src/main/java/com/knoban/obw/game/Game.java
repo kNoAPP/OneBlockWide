@@ -136,6 +136,9 @@ public final class Game implements Listener {
                     pl.playSound(pl.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1F, 1.1F);
                 }
 
+                // Log the winner
+                OneBlockWide.getInstance().logWinner(lastWinner);
+
                 countdown = 15;
                 break;
         }
@@ -286,9 +289,23 @@ public final class Game implements Listener {
             case PRECOMBAT:
             case COMBAT:
             case WINNER:
+                e.setCancelled(true);
+                
+                if(e.getDeathMessage() != null){
+                    for(Player player : Bukkit.getOnlinePlayers()){
+                        player.sendMessage(e.getDeathMessage());
+                    }
+                }
+
+                if (p.getLocation().getY() < 20) {
+                    Bukkit.getScheduler().runTaskLater(OneBlockWide.getInstance(), () -> {
+                        Location locationClone = p.getLocation().clone();
+                        locationClone.setY(20);
+                        p.teleport(locationClone);
+                    }, 1L);
+                }
+
                 p.setGameMode(GameMode.SPECTATOR);
-                if(p.getLocation().getY() < 0)
-                    p.teleport(gameMap.getCenter());
                 break;
         }
         e.getDrops().add(new ItemStack(Material.BONE, 1));

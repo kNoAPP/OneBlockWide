@@ -359,7 +359,7 @@ public class GameMap implements Listener {
     @Nullable
     public Location getCenter() {
         Location loc = center.clone();
-        loc.setY(80);
+        loc.setY(world.getHighestBlockYAt(center.getBlockX(), center.getBlockZ()));
         return loc;
     }
 

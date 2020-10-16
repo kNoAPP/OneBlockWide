@@ -289,9 +289,17 @@ public final class Game implements Listener {
             case PRECOMBAT:
             case COMBAT:
             case WINNER:
+                e.setCancelled(true);
+                
+                if(e.getDeathMessage() != null){
+                    for(Player player : Bukkit.getOnlinePlayers()){
+                        player.sendMessage(e.getDeathMessage());
+                    }
+                }
+                
                 p.setGameMode(GameMode.SPECTATOR);
                 if(p.getLocation().getY() < 0)
-                    p.teleport(gameMap.getCenter());
+                    //p.teleport(gameMap.getCenter());
                 break;
         }
         e.getDrops().add(new ItemStack(Material.BONE, 1));

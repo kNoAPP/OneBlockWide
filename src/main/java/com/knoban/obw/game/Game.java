@@ -136,6 +136,9 @@ public final class Game implements Listener {
                     pl.playSound(pl.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1F, 1.1F);
                 }
 
+                // Log the winner
+                OneBlockWide.getInstance().logWinner(lastWinner);
+
                 countdown = 15;
                 break;
         }

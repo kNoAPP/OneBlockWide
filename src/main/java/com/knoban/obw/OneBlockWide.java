@@ -10,6 +10,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
 
 public class OneBlockWide extends JavaPlugin {
 
@@ -18,6 +27,15 @@ public class OneBlockWide extends JavaPlugin {
     private DataHandler.YML config;
     private DataHandler.JSON spawn;
     private Location spawnLoc;
+
+    private final SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private File winLog;
+
+    @Nullable
+    private PrintWriter winLogWriter;
+
+
 
     @Override
     public void onEnable() {
@@ -32,6 +50,28 @@ public class OneBlockWide extends JavaPlugin {
             spawn.saveJSON(new Coordinate(Bukkit.getWorlds().get(0).getSpawnLocation()));
         }
         spawnLoc = spawn.getCachedJSON(Coordinate.class).getLocation();
+
+        // Create the win log file if it doesn't exist
+        winLog = new File(getDataFolder(), "winners.log");
+        if(!winLog.exists()){
+            try {
+                winLog.createNewFile();
+                getLogger().log(Level.WARNING, "Created winners log file!");
+            } catch (IOException e) {
+                getLogger().log(Level.WARNING, "Couldn't create winners log file!");
+                e.printStackTrace();
+            }
+        }
+
+        // Create a new buffered writer to write to
+        try {
+            // Open the file with a file writer with append: true
+            // so we don't overwrite any existing data
+            winLogWriter = new PrintWriter(new FileWriter(winLog, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+            getLogger().log(Level.WARNING, "Couldn't create winners log writer!");
+        }
 
         new CommandHandler(this);
         getServer().getPluginManager().registerEvents(new GeneralListener(), this);
@@ -58,7 +98,38 @@ public class OneBlockWide extends JavaPlugin {
         long tEnd = System.currentTimeMillis();
         long shutdownTime = tEnd - tStart;
 
+        // Close the winners log writer
+        if(winLogWriter != null){
+            winLogWriter.flush();
+            winLogWriter.close();
+        }
+
         getLogger().info("Successfully Disabled! (" + shutdownTime + " ms)");
+    }
+
+    /**
+     * Log the winner to a file
+     *
+     * @param winner - the winner
+     */
+    public void logWinner (String winner) {
+
+        if(winLogWriter == null){
+            getLogger().log(Level.WARNING, "Winners log writer is null!");
+            return;
+        }
+
+        winLogWriter.println(winner + " has won a game at " + getCurrentTimeStamp());
+        winLogWriter.flush();
+    }
+
+    /**
+     * Get the current date formatted using the simple date format
+     *
+     * @return - the current date formatted
+     */
+    private String getCurrentTimeStamp() {
+        return sdfDate.format(new java.util.Date());
     }
 
     @NotNull

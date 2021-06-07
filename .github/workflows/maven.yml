@@ -34,9 +34,7 @@ jobs:
       run: |
           VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
           echo $VERSION
-          ls target
           mv ./target/obw-$VERSION.jar ./target/OneBlockWide.jar
-          ls target
           curl "https://panel.knoban.com/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/files/delete" \
           -H 'Accept: application/json' \
           -H 'Content-Type: application/json' \
@@ -45,7 +43,6 @@ jobs:
           -d '{"root": "/plugins", "files": ["OneBlockWide.jar"]}'
           curl "https://panel.knoban.com/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/files/write?file=%2Fplugins%2FOneBlockWide.jar" \
           -H 'Accept: application/json' \
-          -H 'Content-Type: application/json' \
           -H 'Authorization: Bearer ${{ secrets.PTERODACTYL_APITOKEN }}' \
           -X POST \
           --data-binary '@./target/OneBlockWide.jar'

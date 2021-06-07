@@ -30,9 +30,9 @@ jobs:
         path: staging
     - name: Restart server
       run: |
-          curl "https://pterodactyl.file.properties/api/client/servers/${{ secrets.Pterodactyl-Container }}/power" \
+          curl "https://pterodactyl.file.properties/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/power" \
           -H 'Accept: application/json' \
           -H 'Content-Type: application/json' \
-          -H 'Authorization: Bearer ${{ secrets.Pterodactyl-Apitoken }}' \
+          -H 'Authorization: Bearer ${{ secrets.PTERODACTYL_APITOKEN }}' \
           -X POST \
           -d '{"signal": "restart"}'

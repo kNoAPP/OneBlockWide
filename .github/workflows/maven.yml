@@ -59,6 +59,7 @@ jobs:
           -d '{"signal": "restart"}'
     - name: Upload OBW
       run: |
+          cd OBW
           VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
           echo $VERSION
           mv ./target/obw-$VERSION.jar ./target/OneBlockWide.jar

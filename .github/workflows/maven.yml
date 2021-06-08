@@ -34,15 +34,19 @@ jobs:
         path: Paper
     - name: Patch and Build Paper
       run: |
+        pwd
+        cd ~/Paper
         git config --global user.email "no-reply@github.com"
         git config --global user.name "Github Actions"
-        ./paper jar
+        ./Paper/paper jar
     - name: Build OBW
       uses: actions/checkout@v2
       with:
         path: OBW
     - name: Build OBW
-      run: mvn --batch-mode --update-snapshots verify
+      run: |
+          cd ~/OBW
+          mvn --batch-mode --update-snapshots verify
     - name: Restart server
       run: |
           curl "https://panel.knoban.com/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/power" \

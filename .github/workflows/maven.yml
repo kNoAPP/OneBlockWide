@@ -21,6 +21,7 @@ jobs:
         distribution: 'adopt'
     - name: Cache local Maven repository
       uses: actions/cache@v2
+      id: cache
       with:
         path: |
             ~/.m2/repository
@@ -28,11 +29,13 @@ jobs:
         key: ${{ runner.os }}-obw-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-maven-obw
     - name: Clone Paper
+      if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
       with:
         repository: PaperMC/Paper
         path: Paper
     - name: Patch and Build Paper
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         cd Paper
         git config --global user.email "no-reply@github.com"
@@ -44,11 +47,10 @@ jobs:
         path: OBW
     - name: Build OBW
       run: |
-          cd ../OBW
+          cd OBW
           mvn --batch-mode --update-snapshots verify
     - name: Restart server
       run: |
-          cd ../
           curl "https://panel.knoban.com/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/power" \
           -H 'Accept: application/json' \
           -H 'Content-Type: application/json' \

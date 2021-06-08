@@ -35,17 +35,18 @@ jobs:
     - name: Patch and Build Paper
       run: |
         pwd
-        cd ~/Paper
+        ls
+        cd Paper
         git config --global user.email "no-reply@github.com"
         git config --global user.name "Github Actions"
-        ./Paper/paper jar
+        ./paper jar
     - name: Build OBW
       uses: actions/checkout@v2
       with:
         path: OBW
     - name: Build OBW
       run: |
-          cd ~/OBW
+          cd ../OBW
           mvn --batch-mode --update-snapshots verify
     - name: Restart server
       run: |

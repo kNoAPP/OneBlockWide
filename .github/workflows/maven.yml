@@ -34,12 +34,10 @@ jobs:
         path: Paper
     - name: Patch and Build Paper
       run: |
-        pwd
-        cd ~
-        pwd
-        ls
+        cd Paper
         git config --global user.email "no-reply@github.com"
         git config --global user.name "Github Actions"
+        ./paper jar
     - name: Clone OBW
       uses: actions/checkout@v2
       with:
@@ -50,6 +48,7 @@ jobs:
           mvn --batch-mode --update-snapshots verify
     - name: Restart server
       run: |
+          cd ../
           curl "https://panel.knoban.com/api/client/servers/${{ secrets.PTERODACTYL_CONTAINER }}/power" \
           -H 'Accept: application/json' \
           -H 'Content-Type: application/json' \

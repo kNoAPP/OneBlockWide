@@ -43,8 +43,6 @@ public class OneBlockWide extends JavaPlugin implements Listener {
         instance = this;
         super.onEnable();
 
-        getLogger().warning("Hi Jere!");
-
         // TODO
         config = new DataHandler.YML(this, "/config.yml");
         spawn = new DataHandler.JSON(this, "/spawn.json");
@@ -92,7 +90,6 @@ public class OneBlockWide extends JavaPlugin implements Listener {
         long tStart = System.currentTimeMillis();
         super.onDisable();
 
-        // TODO
         GameMapGenerator.getInstance().safeShutdown();
         Game.getInstance().getGameMap().unload();
         spawn.saveJSON(new Coordinate(spawnLoc));

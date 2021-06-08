@@ -15,7 +15,6 @@ jobs:
 
     steps:
     - name: Clone Paper
-      if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
       with:
         repository: PaperMC/Paper

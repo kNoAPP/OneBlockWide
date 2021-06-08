@@ -14,13 +14,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
     - name: Setup JDK 8
       uses: actions/setup-java@v2
       with:
         java-version: '8'
         distribution: 'adopt'
-    - name: Build with Maven
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: |
+            ~/.m2/repository
+            Paper/work/Minecraft
+        key: ${{ runner.os }}-obw-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-obw
+    - name: Clone Paper
+      uses: actions/checkout@v2
+      with:
+        repository: PaperMC/Paper
+        path: Paper
+    - name: Patch and Build Paper
+      run: |
+        git config --global user.email "no-reply@github.com"
+        git config --global user.name "Github Actions"
+        ./paper jar
+    - name: Build OBW
+      uses: actions/checkout@v2
+      with:
+        path: OBW
+    - name: Build OBW
       run: mvn --batch-mode --update-snapshots verify
     - name: Restart server
       run: |
@@ -30,7 +51,7 @@ jobs:
           -H 'Authorization: Bearer ${{ secrets.PTERODACTYL_APITOKEN }}' \
           -X POST \
           -d '{"signal": "restart"}'
-    - name: Upload artifact
+    - name: Upload OBW
       run: |
           VERSION=$( mvn help:evaluate -Dexpression=project.version -q -DforceStdout )
           echo $VERSION

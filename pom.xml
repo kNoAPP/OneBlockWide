@@ -15,18 +15,25 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>papermc</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
+        <!--
+		To get this dependency to not have errors, please follow these instructions:
+		1. For this to work, you will need a Java JDK and Maven installed on your machine with environmental variables
+			set.
+		2. Somewhere on your computer, clone https://github.com/PaperMC/Paper.
+		3. Go into the cloned folder and run ./paper jar from bash. If you're on Windows, you may need to download Git
+			from https://git-scm.com/downloads to be able to run the command from the Git prompt window. This command
+			will build PaperSpigot on your computer and also drop some needed libraries into your .m2 folder.
+		4. If you see errors in the script, chances are you did not set up your JDK or Maven environments correctly.
+			Usually the most common errors are because of misconfiguration in environmental variables.
+		5. When the script completes, reload this project and the errors should go away.
+
+		https://papermc.io/forums/t/using-nms-in-paper/5710/5
+		-->
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.16.3-R0.1-SNAPSHOT</version>
+            <artifactId>paper</artifactId>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 

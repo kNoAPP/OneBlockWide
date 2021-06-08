@@ -15,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,8 +36,6 @@ public class OneBlockWide extends JavaPlugin implements Listener {
 
     @Nullable
     private PrintWriter winLogWriter;
-
-
 
     @Override
     public void onEnable() {

@@ -90,7 +90,6 @@ public class OneBlockWide extends JavaPlugin implements Listener {
         long tStart = System.currentTimeMillis();
         super.onDisable();
 
-        // TODO
         GameMapGenerator.getInstance().safeShutdown();
         Game.getInstance().getGameMap().unload();
         spawn.saveJSON(new Coordinate(spawnLoc));
